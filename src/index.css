@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --color-navy-950: #080e1c;
+  --color-navy-900: #0f1628;
+  --color-navy-800: #1a2340;
+  --color-navy-700: #243060;
+  --color-navy-600: #2e3d80;
+  --color-cream-50: #eae8e3;
+  --color-cream-100: #d8d5ce;
+  --color-cream-200: #b8b4aa;
+  --color-risk-low: #3dba7e;
+  --color-risk-elevated: #f0a130;
+  --color-risk-high: #e04f4f;
+  --color-signal-hr: #7eb8f5;
+  --color-signal-temp: #f5a05a;
+  --color-signal-eda: #a47ef5;
+  --color-signal-movement: #5abfb5;
+  --color-signal-accel: #f5d07a;
+  --font-sans: 'Outfit', sans-serif;
+  --font-mono: 'Outfit', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: #243060 transparent;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #243060; border-radius: 2px; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: #0f1628;
+  color: #eae8e3;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono {
+  font-family: 'Outfit', sans-serif;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes risk-glow-low {
+  0%, 100% { box-shadow: 0 0 16px 0px rgba(26, 140, 88, 0.18); }
+  50% { box-shadow: 0 0 32px 4px rgba(26, 140, 88, 0.28); }
+}
+
+@keyframes risk-glow-elevated {
+  0%, 100% { box-shadow: 0 0 16px 0px rgba(184, 106, 0, 0.2); }
+  50% { box-shadow: 0 0 32px 4px rgba(184, 106, 0, 0.32); }
+}
+
+@keyframes risk-glow-high {
+  0%, 100% { box-shadow: 0 0 16px 0px rgba(192, 40, 40, 0.22); }
+  50% { box-shadow: 0 0 36px 6px rgba(192, 40, 40, 0.36); }
+}
+
+.glow-low { animation: risk-glow-low 3s ease-in-out infinite; }
+.glow-elevated { animation: risk-glow-elevated 2s ease-in-out infinite; }
+.glow-high { animation: risk-glow-high 1.5s ease-in-out infinite; }
+
+@keyframes live-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+.live-dot { animation: live-dot 1.4s ease-in-out infinite; }
