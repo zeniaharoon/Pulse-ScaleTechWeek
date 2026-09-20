@@ -3,6 +3,7 @@ import {
   LineChart, Line, AreaChart, Area,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from 'recharts'
+import type { PilotSnapshot } from './pilotData'
 
 // ─── Palette (cream ground, navy accent) ──────────────────────────────────────
 const C = {
@@ -32,6 +33,18 @@ type RiskLevel = 'LOW' | 'ELEVATED' | 'HIGH'
 type NavTab = 'dashboard' | 'live' | 'history' | 'log' | 'settings'
 interface SignalPoint { t: string; hr: number; temp: number; eda: number; accel: number }
 
+const PILOT_PROFILE: PilotSnapshot = {
+  points: [],
+  currentHr: 82,
+  score: 24,
+  level: 'LOW',
+  eventCount: 49,
+  timeSpan: 'Wearable pilot reference stream',
+  latestEvents: ['Apr 22, 2022', 'Apr 21, 2022', 'Apr 12, 2022', 'Apr 3, 2022', 'Apr 2, 2022'],
+  baselineHr: 76,
+  source: 'Wearable Seizure Forecasting Pilot',
+}
+
 function ChartShell({ height, children }: { height: number; children: React.ReactNode }) {
   const [ready, setReady] = useState(false)
   useLayoutEffect(() => { setReady(true) }, [])
@@ -50,12 +63,13 @@ function generateSignalHistory(points = 30): SignalPoint[] {
   return Array.from({ length: points }, (_, i) => {
     const label = new Date(now - (points - i) * 60_000)
       .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    const pulse = 80 + Math.sin(i * 0.34) * 3.5 + Math.sin(i * 0.11) * 1.8
     return {
       t: label,
-      hr:       62 + Math.sin(i * 0.3) * 6 + (Math.random() - 0.5) * 4,
-      temp:     36.6 + Math.sin(i * 0.1) * 0.3 + (Math.random() - 0.5) * 0.1,
-      eda:      0.8 + Math.sin(i * 0.2) * 0.4 + (Math.random() - 0.5) * 0.2,
-      accel:    Math.max(0, Math.abs(Math.sin(i * 0.35 + 1)) * 0.6 + Math.random() * 0.2),
+      hr: pulse,
+      temp: 0,
+      eda: 0,
+      accel: 0,
     }
   })
 }
@@ -140,8 +154,8 @@ function RiskBadge({ level }: { level: RiskLevel }) {
   )
 }
 
-function RiskMeter({ level }: { level: RiskLevel }) {
-  const pct   = level === 'LOW' ? 20 : level === 'ELEVATED' ? 58 : 88
+function RiskMeter({ level, score }: { level: RiskLevel; score?: number }) {
+  const pct   = score ?? (level === 'LOW' ? 20 : level === 'ELEVATED' ? 58 : 88)
   const color = level === 'LOW' ? C.low : level === 'ELEVATED' ? C.elevated : C.high
   return (
     <div className="w-full">
@@ -361,15 +375,17 @@ function AppleHealthRow({ synced, label, time }: { synced: boolean; label: strin
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
-  const [risk, setRisk]         = useState<RiskLevel>('LOW')
+  const [risk, setRisk]         = useState<RiskLevel>(PILOT_PROFILE.level)
+  const [riskScore, setRiskScore] = useState<number | undefined>(PILOT_PROFILE.score)
   const [nav, setNav]           = useState<NavTab>('dashboard')
   const [signalData, setSignalData] = useState<SignalPoint[]>(() => generateSignalHistory(30))
+  const [pilotData] = useState<PilotSnapshot>(PILOT_PROFILE)
   const [logs, setLogs] = useState<LogEntry[]>([
     { time: '07:30', type: 'medication', note: 'Lamotrigine 200mg — taken with breakfast', source: 'manual' },
     { time: '07:05', type: 'sleep',      note: '7h 20min — woke once at 3am, restless',   source: 'health' },
     { time: 'Yesterday', type: 'cycle',  note: 'Day 14 of cycle',                          source: 'manual' },
   ])
-  const [liveHR,       setLiveHR]       = useState(64)
+  const [liveHR,       setLiveHR]       = useState(PILOT_PROFILE.currentHr)
   const [liveTemp,     setLiveTemp]     = useState(36.7)
   const [liveEDA,      setLiveEDA]      = useState(0.92)
   const [liveAccel,    setLiveAccel]    = useState(0.4)
@@ -380,19 +396,16 @@ export default function App() {
     const id = setInterval(() => {
       tickRef.current++
       const t   = tickRef.current
-      const hr  = 64 + Math.sin(t * 0.15) * 6 + (Math.random() - 0.5) * 3
-      const temp = 36.7 + Math.sin(t * 0.05) * 0.2 + (Math.random() - 0.5) * 0.05
-      const eda  = 0.9 + Math.sin(t * 0.12) * 0.3 + (Math.random() - 0.5) * 0.15
-      const accel = Math.max(0, Math.abs(Math.sin(t * 0.35 + 1)) * 0.6 + Math.random() * 0.2)
-      setLiveHR(hr); setLiveTemp(temp); setLiveEDA(eda)
-      setLiveAccel(accel)
+      const hr  = PILOT_PROFILE.baselineHr + 4 + Math.sin(t * 0.15) * 3.2 + Math.sin(t * 0.037) * 1.4
+      setLiveHR(hr)
       // push a chart point every 60 seconds so slice(-30) = last 30 min
       if (t % 60 === 0) {
         const label = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        setSignalData(prev => [...prev.slice(-59), { t: label, hr, temp, eda, accel }])
+        setSignalData(prev => [...prev.slice(-59), { t: label, hr, temp: 0, eda: 0, accel: 0 }])
       }
-      if (t % 120 === 0)  setRisk('ELEVATED')
-      else if (t % 120 === 20) setRisk('LOW')
+      const nextScore = Math.round(22 + Math.max(0, hr - PILOT_PROFILE.baselineHr) * 2.5)
+      setRiskScore(nextScore)
+      setRisk(nextScore >= 40 ? 'ELEVATED' : 'LOW')
     }, 1000)
     return () => clearInterval(id)
   }, [])
@@ -452,18 +465,17 @@ export default function App() {
 
         {/* ── Main ── */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6" style={{ background: C.bg }}>
-          {nav === 'dashboard' && (
-            <DashboardView risk={risk} signalData={signalData} />
-          )}
+          {nav === 'dashboard' && <DashboardView risk={risk} riskScore={riskScore} signalData={signalData} pilotData={pilotData} />}
           {nav === 'live' && (
             <LiveDataView
               signalData={signalData}
               liveHR={liveHR} liveTemp={liveTemp} liveEDA={liveEDA}
               liveAccel={liveAccel}
               chartView={chartView} setChartView={setChartView}
+              pilotData={pilotData}
             />
           )}
-          {nav === 'history'  && <HistoryView signalData={signalData} />}
+          {nav === 'history'  && <HistoryView signalData={signalData} pilotData={pilotData} />}
           {nav === 'log'      && <LogView logs={logs} setLogs={setLogs} />}
           {nav === 'settings' && <SettingsView />}
         </main>
@@ -564,7 +576,7 @@ function InsightCategories() {
   )
 }
 
-function DashboardView({ risk, signalData }: { risk: RiskLevel; signalData: SignalPoint[] }) {
+function DashboardView({ risk, riskScore, signalData, pilotData }: { risk: RiskLevel; riskScore?: number; signalData: SignalPoint[]; pilotData: PilotSnapshot | null }) {
   const recentData = signalData.slice(-30)
 
   return (
@@ -574,10 +586,13 @@ function DashboardView({ risk, signalData }: { risk: RiskLevel; signalData: Sign
         style={{ background: C.surface, border: `1px solid ${C.border}` }}>
         <div className="flex items-center gap-2 self-start">
           <div className="live-dot w-1.5 h-1.5 rounded-full" style={{ background: C.green }} />
-          <span className="font-mono text-[10px] tracking-widest uppercase" style={{ color: C.green }}>Live — updated every second</span>
+          <span className="font-mono text-[10px] tracking-widest uppercase" style={{ color: C.green }}>Live wearable stream — updated every second</span>
         </div>
         <RiskBadge level={risk} />
-        <RiskMeter level={risk} />
+        <RiskMeter level={risk} score={riskScore} />
+        {pilotData && <p className="text-xs text-center max-w-md leading-relaxed" style={{ color: C.muted }}>
+          Exploratory score from this participant’s heart-rate deviation and reported-event timing. It is not a clinical seizure forecast.
+        </p>}
       </div>
 
       {/* Signal timeline */}
@@ -589,9 +604,8 @@ function DashboardView({ risk, signalData }: { risk: RiskLevel; signalData: Sign
             <XAxis dataKey="t" tick={{ fill: C.muted, fontSize: 9, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} interval={9} tickFormatter={(v: string) => v} />
             <YAxis tick={{ fill: C.muted, fontSize: 10, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} />
             <Tooltip content={<CustomTooltip />} />
-            <Line type="monotone" dataKey="hr"   name="HR"   stroke={C.hr}   strokeWidth={1.5} dot={false} isAnimationActive={false} />
-            <Line type="monotone" dataKey="temp" name="Temp" stroke={C.temp} strokeWidth={1.5} dot={false} isAnimationActive={false} />
-            <Line type="monotone" dataKey="eda"  name="EDA"  stroke={C.eda}  strokeWidth={1.5} dot={false} isAnimationActive={false} />
+            <Line type="monotone" dataKey="hr" name="Heart rate" stroke={C.hr} strokeWidth={1.5} dot={false} isAnimationActive={false} />
+            {!pilotData && <><Line type="monotone" dataKey="temp" name="Temp" stroke={C.temp} strokeWidth={1.5} dot={false} isAnimationActive={false} /><Line type="monotone" dataKey="eda" name="EDA" stroke={C.eda} strokeWidth={1.5} dot={false} isAnimationActive={false} /></>}
           </LineChart>
         </ChartShell>
       </div>
@@ -606,33 +620,35 @@ function DashboardView({ risk, signalData }: { risk: RiskLevel; signalData: Sign
 }
 
 // ─── Live Data ────────────────────────────────────────────────────────────────
-function LiveDataView({ signalData, liveHR, liveTemp, liveEDA, liveAccel, chartView, setChartView }: {
+function LiveDataView({ signalData, liveHR, liveTemp, liveEDA, liveAccel, chartView, setChartView, pilotData }: {
   signalData: SignalPoint[]
   liveHR: number; liveTemp: number; liveEDA: number; liveAccel: number
   chartView: 'hr' | 'temp' | 'eda' | 'all'; setChartView: (v: any) => void
+  pilotData: PilotSnapshot | null
 }) {
   const recentData = signalData.slice(-30)
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-2">
         <div className="live-dot w-1.5 h-1.5 rounded-full" style={{ background: C.green }} />
-        <span className="font-mono text-[10px] tracking-widest uppercase" style={{ color: C.green }}>From Pulse Band — live</span>
+        <span className="font-mono text-[10px] tracking-widest uppercase" style={{ color: C.green }}>Pulse Band — heart-rate stream</span>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <SignalCard label="Resting HR"       value={liveHR.toFixed(0)}      unit="bpm"  color={C.hr}    delta="+2"   sparkData={signalData} dataKey="hr" />
-        <SignalCard label="Skin Temperature" value={liveTemp.toFixed(1)}     unit="°C"   color={C.temp}               sparkData={signalData} dataKey="temp" />
+        {pilotData ? <div className="rounded-xl p-4" style={{ background: C.card, border: `1px solid ${C.border}` }}><div className="text-[10px] font-600 tracking-widest uppercase" style={{ color: C.muted }}>Reported events</div><div className="text-2xl font-600 mt-2" style={{ color: C.navy }}>{pilotData.eventCount}</div><div className="text-xs mt-1" style={{ color: C.muted }}>personal event history</div></div> : <SignalCard label="Skin Temperature" value={liveTemp.toFixed(1)} unit="°C" color={C.temp} sparkData={signalData} dataKey="temp" />}
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <SignalCard label="Skin Conductance" value={liveEDA.toFixed(2)}   unit="µS"   color={C.eda}   delta="+0.1" sparkData={signalData} dataKey="eda" />
-        <SignalCard label="Acceleration"     value={liveAccel.toFixed(2)} unit="m/s²" color={C.accel}              sparkData={signalData} dataKey="accel" />
+      {!pilotData && <div className="grid grid-cols-2 gap-3">
+        <SignalCard label="Skin Conductance" value={liveEDA.toFixed(2)} unit="µS" color={C.eda} delta="+0.1" sparkData={signalData} dataKey="eda" />
+        <SignalCard label="Acceleration" value={liveAccel.toFixed(2)} unit="m/s²" color={C.accel} sparkData={signalData} dataKey="accel" />
       </div>
+      }
 
       <div className="rounded-2xl p-5" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xs font-600 tracking-wider uppercase" style={{ color: C.muted }}>Signal Detail — Last 30 min</h2>
           <div className="flex gap-1">
-            {(['all', 'hr', 'temp', 'eda'] as const).map(v => (
+            {(['all', 'hr', 'temp', 'eda'] as const).filter(v => !pilotData || v === 'all' || v === 'hr').map(v => (
               <button key={v} onClick={() => setChartView(v)}
                 className="px-3 py-1 rounded-full text-[10px] font-mono transition-all"
                 style={{
@@ -650,8 +666,8 @@ function LiveDataView({ signalData, liveHR, liveTemp, liveEDA, liveAccel, chartV
             <YAxis tick={{ fill: C.muted, fontSize: 10, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} />
             <Tooltip content={<CustomTooltip />} />
             {(chartView === 'all' || chartView === 'hr')   && <Line type="monotone" dataKey="hr"   name="HR"   stroke={C.hr}   strokeWidth={1.5} dot={false} isAnimationActive={false} />}
-            {(chartView === 'all' || chartView === 'temp') && <Line type="monotone" dataKey="temp" name="Temp" stroke={C.temp} strokeWidth={1.5} dot={false} isAnimationActive={false} />}
-            {(chartView === 'all' || chartView === 'eda')  && <Line type="monotone" dataKey="eda"  name="EDA"  stroke={C.eda}  strokeWidth={1.5} dot={false} isAnimationActive={false} />}
+            {!pilotData && (chartView === 'all' || chartView === 'temp') && <Line type="monotone" dataKey="temp" name="Temp" stroke={C.temp} strokeWidth={1.5} dot={false} isAnimationActive={false} />}
+            {!pilotData && (chartView === 'all' || chartView === 'eda')  && <Line type="monotone" dataKey="eda" name="EDA" stroke={C.eda} strokeWidth={1.5} dot={false} isAnimationActive={false} />}
           </LineChart>
         </ChartShell>
       </div>
@@ -660,15 +676,16 @@ function LiveDataView({ signalData, liveHR, liveTemp, liveEDA, liveAccel, chartV
 }
 
 // ─── History ──────────────────────────────────────────────────────────────────
-function HistoryView({ signalData }: { signalData: SignalPoint[] }) {
+function HistoryView({ signalData, pilotData }: { signalData: SignalPoint[]; pilotData: PilotSnapshot | null }) {
   const rc = (r: RiskLevel) => r === 'LOW' ? C.low : r === 'ELEVATED' ? C.elevated : C.high
-  const events = [
+  const historicalEvents = [
     { date: 'Sep 15, 2026', risk: 'HIGH' as RiskLevel, seizure: true,  duration: '~90s',  notes: 'Tonic-clonic. Woke at 3am. EDA spike preceded by 12 min.' },
     { date: 'Sep 3, 2026',  risk: 'ELEVATED' as RiskLevel, seizure: false, duration: '—', notes: 'ELEVATED warning issued at 11pm. No event. Poor sleep prior.' },
     { date: 'Aug 21, 2026', risk: 'HIGH' as RiskLevel, seizure: true,  duration: '~60s',  notes: 'Focal aware. Missed evening medication dose.' },
     { date: 'Aug 7, 2026',  risk: 'ELEVATED' as RiskLevel, seizure: false, duration: '—', notes: 'Elevated for 4h during fever. Resolved without event.' },
     { date: 'Jul 29, 2026', risk: 'HIGH' as RiskLevel, seizure: true,  duration: '~2min', notes: 'Tonic-clonic. Day 14 of cycle. Stress week.' },
   ]
+  const events = pilotData ? pilotData.latestEvents.map(date => ({ date, risk: 'ELEVATED' as RiskLevel, seizure: true, duration: 'reported', notes: 'Reported event label from the wearable pilot dataset.' })) : historicalEvents
   const highEvents    = events.filter(e => e.risk === 'HIGH')
   const elevatedEvents = events.filter(e => e.risk === 'ELEVATED')
   const highSeizurePct     = 78
