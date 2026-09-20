@@ -1,0 +1,37 @@
+{"kind":"deck","id":"pr/86340q","name":"Deck"}
+{"kind":"layout","layoutId":"d14d8c1c-398a-4805-a56b-e1467e428f29","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"839a4cc5-3bc1-4d4d-8c58-37f8f45c44d8","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/x8vtjc","slide":1,"title":"Technical appendix","textShapes":22}
+{"kind":"textbox","id":"sh/x8z6x8bi","slide":1,"text":"Technical appendix","textPreview":"Technical appendix","textChars":18,"textLines":1,"bbox":[64,42,1150,48]}
+{"kind":"shape","id":"sh/a5onmtc7","slide":1,"bbox":[64,112,1152,54]}
+{"kind":"textbox","id":"sh/v6hovytc","slide":1,"text":"Participant-specific seizure forecasting workflow","textPreview":"Participant-specific seizure forecasting workflow","textChars":49,"textLines":1,"bbox":[82,113,1116,52]}
+{"kind":"textbox","id":"sh/8365k3u1","slide":1,"text":"Data used in the research pathway","textPreview":"Data used in the research pathway","textChars":33,"textLines":1,"bbox":[72,194,455,26]}
+{"kind":"textbox","id":"sh/94f6t8bm","slide":1,"text":"The wearable pilot provides heart-rate measurements and participant-reported event times. The product model expands this foundation with additional validated wearable signals.","textPreview":"The wearable pilot provides heart-rate measurements and participant-reported event times. The product model expands this foundation with ...","textChars":175,"textLines":1,"bbox":[72,230,486,69]}
+{"kind":"shape","id":"sh/m1onitcv","slide":1,"bbox":[72,332,470,160]}
+{"kind":"shape","id":"sh/n2xorytg","slide":1,"bbox":[72,332,470,42]}
+{"kind":"textbox","id":"sh/szapwnu5","slide":1,"text":"Wearable Seizure Forecasting Pilot","textPreview":"Wearable Seizure Forecasting Pilot","textChars":34,"textLines":1,"bbox":[92,337,430,31]}
+{"kind":"textbox","id":"sh/t0j65sbq","slide":1,"text":"Available inputs","textPreview":"Available inputs","textChars":16,"textLines":1,"bbox":[92,396,140,22]}
+{"kind":"textbox","id":"sh/hgj65cfi","slide":1,"text":"Heart rate\nReported seizure-event times","textPreview":"Heart rate | Reported seizure-event times","textChars":39,"textLines":2,"bbox":[92,424,245,52]}
+{"kind":"textbox","id":"sh/gfapw7ed","slide":1,"text":"Public research dataset\n13 participant event files\n7 heart-rate files","textPreview":"Public research dataset | 13 participant event files | 7 heart-rate files","textChars":69,"textLines":3,"bbox":[336,396,180,78]}
+{"kind":"textbox","id":"sh/fuho32xs","slide":1,"text":"Forecast development","textPreview":"Forecast development","textChars":20,"textLines":1,"bbox":[600,194,500,26]}
+{"kind":"shape","id":"sh/ut87uxw7","slide":1,"bbox":[600,234,183,208]}
+{"kind":"shape","id":"sh/tsz61sfm","slide":1,"bbox":[622,258,42,42]}
+{"kind":"textbox","id":"sh/srqpsne1","slide":1,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[622,257,42,42]}
+{"kind":"textbox","id":"sh/7qhoz2xg","slide":1,"text":"Prepare","textPreview":"Prepare","textChars":7,"textLines":1,"bbox":[622,318,139,28]}
+{"kind":"textbox","id":"sh/6p8nqxwv","slide":1,"text":"Align sensor records with event labels. Check coverage, gaps, and time zones.","textPreview":"Align sensor records with event labels. Check coverage, gaps, and time zones.","textChars":77,"textLines":1,"bbox":[622,358,139,54]}
+{"kind":"shape","id":"sh/do36dwfq","slide":1,"bbox":[806,234,183,208]}
+{"kind":"shape","id":"sh/cnup4rel","slide":1,"bbox":[828,258,42,42]}
+{"kind":"textbox","id":"sh/cr29gvmh","slide":1,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[828,257,42,42]}
+{"kind":"textbox","id":"sh/xsbq9032","slide":1,"text":"Personalize","textPreview":"Personalize","textChars":11,"textLines":1,"bbox":[828,318,139,28]}
+{"kind":"textbox","id":"sh/ap0re54b","slide":1,"text":"Estimate each participant's baseline and build time-aware physiological features.","textPreview":"Estimate each participant's baseline and build time-aware physiological features.","textChars":81,"textLines":1,"bbox":[828,358,139,54]}
+{"kind":"shape","id":"sh/bq987qlw","slide":1,"bbox":[1012,234,183,208]}
+{"kind":"shape","id":"sh/oni9cvml","slide":1,"bbox":[1034,258,42,42]}
+{"kind":"textbox","id":"sh/porq5036","slide":1,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[1034,257,42,42]}
+{"kind":"textbox","id":"sh/210ral4f","slide":1,"text":"Evaluate","textPreview":"Evaluate","textChars":8,"textLines":1,"bbox":[1034,318,139,28]}
+{"kind":"textbox","id":"sh/nm983q50","slide":1,"text":"Train on earlier periods and test on later periods before setting alert thresholds.","textPreview":"Train on earlier periods and test on later periods before setting alert thresholds.","textChars":83,"textLines":1,"bbox":[1034,358,139,54]}
+{"kind":"shape","id":"sh/0zi98bm9","slide":1,"bbox":[72,536,1123,74]}
+{"kind":"textbox","id":"sh/10rq1gnu","slide":1,"text":"Prototype scope","textPreview":"Prototype scope","textChars":15,"textLines":1,"bbox":[92,551,165,23]}
+{"kind":"textbox","id":"sh/3upsb6pw","slide":1,"text":"The current app visualizes a continuous risk score. A clinical model requires participant mapping, signal-quality review, temporal validation, and prospective study design.","textPreview":"The current app visualizes a continuous risk score. A clinical model requires participant mapping, signal-quality review, temporal valida...","textChars":172,"textLines":1,"bbox":[260,548,914,31]}
+{"kind":"textbox","id":"sh/itgri1ob","slide":1,"text":"Sources: Wearable Seizure Forecasting Pilot, University of Melbourne (2023), CC BY-NC-SA 4.0.  Data quality context: Kjaer et al., Scientific Reports (2022).","textPreview":"Sources: Wearable Seizure Forecasting Pilot, University of Melbourne (2023), CC BY-NC-SA 4.0.  Data quality context: Kjaer et al., Scient...","textChars":157,"textLines":1,"bbox":[72,647,1050,22]}
+{"kind":"textbox","id":"sh/5w7adg7m","slide":1,"text":"Appendix","textPreview":"Appendix","textChars":8,"textLines":1,"bbox":[1135,647,60,22]}
+{"kind":"notes","id":"nt/x8vtjc","slide":1,"text":"Sources: University of Melbourne, Wearable Seizure Forecasting Pilot (2023), https://figshare.unimelb.edu.au/articles/dataset/Wearable_Seizure_Forecasting_Pilot/23206445. Kjaer et al., Data quality evaluation in wearable monitoring, Scientific Reports (2022), https://pmc.ncbi.nlm.nih.gov/articles/PMC9741649/. The model-development statements describe a proposed research workflow and do not represent clinical performance claims."}

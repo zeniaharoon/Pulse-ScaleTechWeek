@@ -397,11 +397,14 @@ export default function App() {
       tickRef.current++
       const t   = tickRef.current
       const hr  = PILOT_PROFILE.baselineHr + 4 + Math.sin(t * 0.15) * 3.2 + Math.sin(t * 0.037) * 1.4
-      setLiveHR(hr)
+      const temp = 36.8 + Math.sin(t * 0.05) * 0.12 + Math.sin(t * 0.013) * 0.05
+      const eda = 0.92 + Math.sin(t * 0.12) * 0.18 + Math.sin(t * 0.031) * 0.08
+      const accel = Math.max(0.05, 0.38 + Math.sin(t * 0.35) * 0.24 + Math.sin(t * 0.087) * 0.11)
+      setLiveHR(hr); setLiveTemp(temp); setLiveEDA(eda); setLiveAccel(accel)
       // push a chart point every 60 seconds so slice(-30) = last 30 min
       if (t % 60 === 0) {
         const label = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        setSignalData(prev => [...prev.slice(-59), { t: label, hr, temp: 0, eda: 0, accel: 0 }])
+        setSignalData(prev => [...prev.slice(-59), { t: label, hr, temp, eda, accel }])
       }
       const nextScore = Math.round(22 + Math.max(0, hr - PILOT_PROFILE.baselineHr) * 2.5)
       setRiskScore(nextScore)
@@ -472,7 +475,6 @@ export default function App() {
               liveHR={liveHR} liveTemp={liveTemp} liveEDA={liveEDA}
               liveAccel={liveAccel}
               chartView={chartView} setChartView={setChartView}
-              pilotData={pilotData}
             />
           )}
           {nav === 'history'  && <HistoryView signalData={signalData} pilotData={pilotData} />}
@@ -620,11 +622,10 @@ function DashboardView({ risk, riskScore, signalData, pilotData }: { risk: RiskL
 }
 
 // ─── Live Data ────────────────────────────────────────────────────────────────
-function LiveDataView({ signalData, liveHR, liveTemp, liveEDA, liveAccel, chartView, setChartView, pilotData }: {
+function LiveDataView({ signalData, liveHR, liveTemp, liveEDA, liveAccel, chartView, setChartView }: {
   signalData: SignalPoint[]
   liveHR: number; liveTemp: number; liveEDA: number; liveAccel: number
   chartView: 'hr' | 'temp' | 'eda' | 'all'; setChartView: (v: any) => void
-  pilotData: PilotSnapshot | null
 }) {
   const recentData = signalData.slice(-30)
   return (
@@ -636,19 +637,18 @@ function LiveDataView({ signalData, liveHR, liveTemp, liveEDA, liveAccel, chartV
 
       <div className="grid grid-cols-2 gap-3">
         <SignalCard label="Resting HR"       value={liveHR.toFixed(0)}      unit="bpm"  color={C.hr}    delta="+2"   sparkData={signalData} dataKey="hr" />
-        {pilotData ? <div className="rounded-xl p-4" style={{ background: C.card, border: `1px solid ${C.border}` }}><div className="text-[10px] font-600 tracking-widest uppercase" style={{ color: C.muted }}>Reported events</div><div className="text-2xl font-600 mt-2" style={{ color: C.navy }}>{pilotData.eventCount}</div><div className="text-xs mt-1" style={{ color: C.muted }}>personal event history</div></div> : <SignalCard label="Skin Temperature" value={liveTemp.toFixed(1)} unit="°C" color={C.temp} sparkData={signalData} dataKey="temp" />}
+        <SignalCard label="Skin Temperature" value={liveTemp.toFixed(1)} unit="°C" color={C.temp} sparkData={signalData} dataKey="temp" />
       </div>
-      {!pilotData && <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <SignalCard label="Skin Conductance" value={liveEDA.toFixed(2)} unit="µS" color={C.eda} delta="+0.1" sparkData={signalData} dataKey="eda" />
         <SignalCard label="Acceleration" value={liveAccel.toFixed(2)} unit="m/s²" color={C.accel} sparkData={signalData} dataKey="accel" />
       </div>
-      }
 
       <div className="rounded-2xl p-5" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xs font-600 tracking-wider uppercase" style={{ color: C.muted }}>Signal Detail — Last 30 min</h2>
           <div className="flex gap-1">
-            {(['all', 'hr', 'temp', 'eda'] as const).filter(v => !pilotData || v === 'all' || v === 'hr').map(v => (
+            {(['all', 'hr', 'temp', 'eda'] as const).map(v => (
               <button key={v} onClick={() => setChartView(v)}
                 className="px-3 py-1 rounded-full text-[10px] font-mono transition-all"
                 style={{
@@ -666,8 +666,8 @@ function LiveDataView({ signalData, liveHR, liveTemp, liveEDA, liveAccel, chartV
             <YAxis tick={{ fill: C.muted, fontSize: 10, fontFamily: 'JetBrains Mono' }} tickLine={false} axisLine={false} />
             <Tooltip content={<CustomTooltip />} />
             {(chartView === 'all' || chartView === 'hr')   && <Line type="monotone" dataKey="hr"   name="HR"   stroke={C.hr}   strokeWidth={1.5} dot={false} isAnimationActive={false} />}
-            {!pilotData && (chartView === 'all' || chartView === 'temp') && <Line type="monotone" dataKey="temp" name="Temp" stroke={C.temp} strokeWidth={1.5} dot={false} isAnimationActive={false} />}
-            {!pilotData && (chartView === 'all' || chartView === 'eda')  && <Line type="monotone" dataKey="eda" name="EDA" stroke={C.eda} strokeWidth={1.5} dot={false} isAnimationActive={false} />}
+            {(chartView === 'all' || chartView === 'temp') && <Line type="monotone" dataKey="temp" name="Temp" stroke={C.temp} strokeWidth={1.5} dot={false} isAnimationActive={false} />}
+            {(chartView === 'all' || chartView === 'eda')  && <Line type="monotone" dataKey="eda" name="EDA" stroke={C.eda} strokeWidth={1.5} dot={false} isAnimationActive={false} />}
           </LineChart>
         </ChartShell>
       </div>
